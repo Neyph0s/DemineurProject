@@ -1,11 +1,13 @@
 from tkinter import *
 from random import *
 
+
+
 WIDTH = 544 #dimmension largeur
 HEIGHT = 306 #dimension hauteur
 
 my_root = Tk() 
-my_root.title("LE DEMINEUR ALPHA v1.0") #titre de la fenetre
+my_root.title("LE DEMINEUR 1.0 ACCES ANTICIPE") #titre de la fenetre
 
 cnv=Canvas(my_root, width=WIDTH, height=HEIGHT, background='ivory') #création de la fenetre
 my_root.resizable(width=False, height=False) #bloquer le redimmensionement de la fenetre
@@ -13,22 +15,28 @@ cnv.pack()
 
 
 #======================================================================================#
+global lvl
 lvl=0#initialisation du niveau 0, debut de jeu
 #===========================#
 #fonction pour gerer le menu#
 #===========================#
 def menu():
-    menubar = Menu(my_root) #appel de la methode pour créer les menus
-    menu1 = Menu(menubar, tearoff=0) #creation du 1er menu
-    menubar.add_cascade(label="Nouvelle partie", command=my_root.quit) #on y associe l'action voulue, ici on quitte car on a pas encore fini
-    menu2 = Menu(menubar, tearoff=0) #creation du 2eme menu
-    menu2.add_command(label="Facile", command=niveau1) #on y associe l'action voulue, ici on quitte car on a pas encore fini
-    menu2.add_command(label="Moyen", command=niveau2) #on y associe l'action voulue, ici on quitte car on a pas encore fini
-    menu2.add_command(label="Difficile", command=niveau3) #on y associe l'action voulue, ici on quitte car on a pas encore fini
+    menubar = Menu(my_root) 
+    menu1 = Menu(menubar, tearoff=0) 
+    menubar.add_cascade(label="Nouvelle partie", command=my_root.quit) 
+    menu2 = Menu(menubar, tearoff=0) 
+    menu2.add_command(label="Facile", command=niveau1) 
+    menu2.add_command(label="Moyen", command=niveau2) 
+    menu2.add_command(label="Difficile", command=niveau3) 
     menubar.add_cascade(label="Difficulté", menu=menu2)
-    menu3 = Menu(menubar, tearoff=0) #creation du 3eme menu
-    menubar.add_cascade(label="Recommencer", command=my_root.quit) #on y associe l'action voulue, ici on quitte car on a pas encore fini
-    my_root.config(menu=menubar) #ici on peut configurer notre menu
+    menu3 = Menu(menubar, tearoff=0) 
+    menubar.add_cascade(label="Recommencer", command=recommencer)  
+    my_root.config(menu=menubar)
+
+def recommencer():
+    cnv.delete("all")
+    genererCadre(lvl)
+    
 
 #==================================================#
 #permet de generer une grille en fonction du niveau#
@@ -364,7 +372,6 @@ M=[]
 def niveau1():  
     my_root.geometry("170x170")
     lvl=1
-    print(lvl)
     global M
     M=genererGrille(lvl)
     genMine(M,lvl)
@@ -379,7 +386,6 @@ def niveau2():
     
     my_root.geometry("306x306")
     lvl=2
-    print(lvl)
     global M
     M=genererGrille(lvl)
     genMine(M,lvl)
@@ -392,7 +398,6 @@ M=[]
 def niveau3():
     my_root.geometry("544x306")
     lvl=3
-    print(lvl)
     global M
     M=genererGrille(lvl)
     genMine(M,lvl)
@@ -411,20 +416,7 @@ def coordModulo(xSouri, ySouri):
     while ySouri%17!=0:
         ySouri = ySouri - 1
     return (xSouri, ySouri)
-
-
-def je_clique(event):
-    x, y = event.x, event.y
-    xC, yC = coordModulo(x,y)
-    cnv.create_oval(x-3, y-3, x+3, y+3,fill='red', outline='')
-    i, j = grilleToTab(xC, yC)
-    verif(i, j,M)
-    
-    
-    
-
-
-    
+   
 #==================================#
 #permet de determiner à partir     #
 #de la case dans laquelle on clique#
@@ -436,15 +428,260 @@ def grilleToTab(xC, yC):
     j = (yC//17)-1
     return(i, j)
 
-def verif(i, j, M):
+#=====================================#
+#Permet d'afficher une valeur dans    #
+#le canvas à partir du tableau de jeu #
+#=====================================#
+def afficherVal(i, j, M):
     var = M[j][i]
-    print(var)
+    xC = ((i+1)*17)+7
+    yC = ((j+1)*17)+9    
+    C=(xC,yC)
+    cnv.create_text(C, anchor =W,text =var, fill ="blue", font="Arial 10")
+
     
-
-
+#====================================================#
+#codes de retour:                                    #
+#   0=> colonne extrême                              #
+#   1=> valeur adjacente = 0                         #
+#   2=> valeur adjacente indiquant un nombre de mines#
+#   3=> valeur adjacente = -1                        #
+#====================================================#
+#=============================================#
+#Permet de verifier la valeur à gauche du clic#
+#=============================================#
+def verifW(i, j, M):    
+    if i==0:
+        return 0 
+    if M[j][i-1]==0:
+        afficherVal(i-1, j, M)
+        return 1
+    if M[j][i-1]!= -1 and M[j][i-1]!= 0:
+        afficherVal(i-1, j, M)
+        return 2
+    if M[j][i-1]== -1:
+        return 3
     
+#=============================================#
+#Permet de verifier la valeur à droite du clic#
+#=============================================#
+def verifE(i, j, M):
+    x = len(M[0])
+    if i==x-1:
+        return 0
+    if M[j][i+1]==0:        
+        afficherVal(i+1, j, M)
+        return 1
+    if M[j][i+1]!= -1 and M[j][i+1]!= 0:
+        afficherVal(i+1, j, M)
+        return 2
+    if M[j][i+1]== -1:
+        return 3
 
-cnv.bind("<Button-1>",je_clique)
+#=============================================#
+#Permet de verifier la valeur en bas du clic  #
+#=============================================#
+def verifN(i, j, M):    
+    if j==0:
+        return 0 
+    if M[j-1][i]==0:
+        afficherVal(i, j-1, M)
+        return 1
+    if M[j-1][i]!= -1 and M[j-1][i]!= 0:
+        afficherVal(i, j-1, M)
+        return 2
+    if M[j-1][i]== -1:
+        return 3
+
+#==============================================#
+#Permet de verifier la valeur en haut du clic  #
+#==============================================#
+def verifS(i, j, M):
+    x = len(M)
+    if j==x-1:
+        return 0
+    if M[j+1][i]==0:
+        afficherVal(i, j+1, M)
+        return 1
+    if M[j+1][i]!= -1 and M[j+1][i]!= 0:
+        afficherVal(i, j+1, M)
+        return 2
+    if M[j+1][i]== -1:
+        return 3
+
+#=============================================#
+#Permet de verifier la valeur en bas du clic  #
+#=============================================#
+def verifNW(i, j, M):
+    x = len(M)
+    if j==0 or i==0:
+        return 0 
+    if M[j-1][i-1]==0:
+        afficherVal(i-1, j-1, M)
+        return 1
+    if M[j-1][i-1]!= -1 and M[j-1][i-1]!= 0:
+        afficherVal(i-1, j-1, M)
+        return 2
+    if M[j-1][i-1]== -1:
+        return 3
+
+#=============================================#
+#Permet de verifier la valeur en bas du clic  #
+#=============================================#
+def verifNE(i, j, M):
+    x = len(M)
+    y = len(M[0])
+    if j==0 or i==y-1:
+        return 0 
+    if M[j-1][i+1]==0:
+        afficherVal(i+1, j-1, M)
+        return 1
+    if M[j-1][i+1]!= -1 and M[j-1][i+1]!= 0:
+        afficherVal(i+1, j-1, M)
+        return 2
+    if M[j-1][i+1]== -1:
+        return 3
+
+#======================================================#
+#Permet de verifier la valeur en bas à gauche du clic  #
+#======================================================#
+def verifSW(i, j, M):
+    x = len(M)
+    if j==x-1 or i==0:
+        return 0 
+    if M[j+1][i-1]==0:
+        afficherVal(i-1, j+1, M)
+        return 1
+    if M[j+1][i-1]!= -1 and M[j+1][i-1]!= 0:
+        afficherVal(i-1, j+1, M)
+        return 2
+    if M[j+1][i-1]== -1:
+        return 3
+
+#=============================================#
+#Permet de verifier la valeur en bas du clic  #
+#=============================================#
+def verifSE(i, j, M):
+    x = len(M)
+    y = len(M[0])
+    if j==x-1 or i==x-1:
+        return 0 
+    if M[j+1][i+1]==0:
+        afficherVal(i+1, j+1, M)
+        return 1
+    if M[j+1][i+1]!= -1 and M[j+1][i+1]!= 0:
+        afficherVal(i+1, j+1, M)
+        return 2
+    if M[j+1][i+1]== -1:
+        return 3
+
+
+
+#=============================#
+#verifie et decouvre les cases#
+#autour de celle ou on clique #
+#si on clique sur un 0        #
+#=============================#
+def verif(i, j, M):
+    if M[j][i]==0:
+        afficherVal(i, j, M)
+        verifN(i, j, M)
+        verifS(i, j, M)
+        verifE(i, j, M)
+        verifW(i, j, M)
+        verifNW(i, j, M)
+        verifNE(i, j, M)
+        verifSW(i, j, M)
+        verifSE(i, j, M)
+    if M[j][i]!=0:
+        return 0
+
+#==============================#
+#affiche la valeur sur laquelle#
+#on a cliqué                   #
+#==============================#
+def verif2(i, j, M):
+        afficherVal(i, j, M)
+               
+        
+   
+#==============================#
+#permet de supprimer tout les 0#
+#adjacents à la case cliquée   #
+#==============================#
+def verifAuto(i, j, M):
+    x, y = len(M), len(M[0])
+    if M[j][i]==0:
+        verifLigne(i, j, M)
+        verifColonne(i, j, M)
+    if M[j][i]!=0:
+        return 0
+
+
+def verifBas(i, j, M):
+    x = len(M)
+    for k in range(j, x, 1):
+        verifLigne(i, k, M)
+        if M[k][i]!=0:
+                return 0
+
+def verifHaut(i, j, M):
+    x = len(M)
+    for k in range(j, -1, -1):
+        verifLigne(i, k, M)
+        if M[k][i]!=0:
+                return 0
+        
+
+def verifLigneDroite(i, j, M):
+        y = len(M[0])
+        for k in range(i, y, 1):
+            verif(k, j, M)
+            if M[j][k]!=0:
+                return 0
+
+def verifLigneGauche(i, j, M):
+        y = len(M[0])
+        for k in range(i, 0, -1):
+            verif(k, j, M)
+            if M[j][k]!=0:
+                return 0
+
+def verifLigne(i, j, M):
+        verifLigneDroite(i, j, M)
+        verifLigneGauche(i, j, M)
+
+def verifColonne(i, j, M):
+    y = len(M[0])
+    for k in range(j, y, 1):
+        verifHaut(k, j, M)
+        verifBas(k, j, M)
+    for k in range(j, 0,-1):
+        verifHaut(k, j, M)
+        verifBas(k, j, M)
+
+
+
+            
+   
+def je_cliqueG(event):
+    x, y = event.x, event.y
+    xC, yC = coordModulo(x,y)
+    cnv.create_oval(x-3, y-3, x+3, y+3,fill='red', outline='')
+    i, j = grilleToTab(xC, yC)
+    verifAuto(i, j,M)
+    verif2(i, j,M)
+
+def je_cliqueD(event):
+    x, y = event.x, event.y
+    xC, yC = coordModulo(x,y)
+    cnv.create_oval(x-3, y-3, x+3, y+3,fill='red', outline='')
+
+
+
+   
+cnv.bind("<Button-3>",je_cliqueD)
+cnv.bind("<Button-1>",je_cliqueG)
 
 menu()
 my_root.mainloop()
