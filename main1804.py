@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[4]:
-
-
 from tkinter import *
 from random import *
 from time import *
@@ -14,7 +8,7 @@ WIDTH = 800 #dimmension largeur
 HEIGHT = 306 #dimension hauteur
 
 my_root = Tk() 
-my_root.title("LE DEMINEUR 1.0 ACCES ANTICIPE") #titre de la fenetre
+my_root.title("LE DEMINEUR 1.0 EARLY ACCESS") #titre de la fenetre
 
 cnv=Canvas(my_root, width=WIDTH, height=HEIGHT, background='ivory') #création de la fenetre
 my_root.resizable(width=False, height=False) #bloquer le redimmensionement de la fenetre
@@ -305,32 +299,34 @@ def centre(x,y):
     return(x,y)
 
 def recommencer():
-    global arret
-    arret = 0
-    cnv.delete("all")
-    genererCadre(cadre)
-    global actu #variable pour le chronomètre
-    actu = 0 #variable pour le chronomètre
-    global nbMines
-    nbMines = minesTmp
-    lblNbMines.config(text='il reste '+str(nbMines)+' mines' )
+    if cadre !=0:
+        global arret
+        arret = 0
+        cnv.delete("all")
+        genererCadre(cadre)
+        global actu #variable pour le chronomètre
+        actu = 0 #variable pour le chronomètre
+        global nbMines
+        nbMines = minesTmp
+        lblNbMines.config(text='il reste '+str(nbMines)+' mines' )
     
     
 
 def nouvellePartie():
-    global arret
-    arret = 0
-    cnv.delete("all")
-    genererCadre(cadre)
-    global M
-    M=genererGrille(cadre)
-    global nbMines
-    nbMines=genMine(M, cadre)
-    lblNbMines.config(text='il reste '+str(nbMines)+' mines' )
-    clcNbMine(M)
-    afficher(M)
-    global actu #variable pour le chronomètre
-    actu = 0 #variable pour le chronomètre
+    if cadre!=0:
+        global arret
+        arret = 0
+        cnv.delete("all")
+        genererCadre(cadre)
+        global M
+        M=genererGrille(cadre)
+        global nbMines
+        nbMines=genMine(M, cadre)
+        lblNbMines.config(text='il reste '+str(nbMines)+' mines' )
+        clcNbMine(M)
+        afficher(M)
+        global actu #variable pour le chronomètre
+        actu = 0 #variable pour le chronomètre
 
 #===================#
 #generation du cadre#
@@ -637,7 +633,7 @@ def verifSW(i, j, M):
 def verifSE(i, j, M):
     x = len(M)
     y = len(M[0])
-    if j==x-1 or i==x-1:
+    if j==x-1 or i==y-1:
         return 0 
     if M[j+1][i+1]==0:
         afficherVal(i+1, j+1, M)
@@ -958,6 +954,15 @@ def Victoire():
 
 
 
+C=(250,100 )
+cnv.create_text(C, anchor =W,text ="BIENVENUE", fill ="black", font="Arial 40 bold")
+
+C=(150,150 )
+cnv.create_text(C, anchor =W,text ="Projet python démineur", fill ="black", font="Arial 40")
+
+C=(10,290 )
+cnv.create_text(C, anchor =W,text ="Authors: Sofien Moussa & Hamza Chablaoui", fill ="black", font="Arial 20")
+
 
 imgPerdu = PhotoImage(file="sprite/perdu.png")
 imgDrapeau = PhotoImage(file="sprite/drapeau.png")
@@ -969,11 +974,3 @@ cnv.bind("<Button-1>",je_cliqueG)
 
 menu()
 my_root.mainloop()
-
-
-
-# In[ ]:
-
-
-
-
